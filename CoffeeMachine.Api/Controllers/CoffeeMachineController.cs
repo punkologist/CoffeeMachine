@@ -18,9 +18,6 @@ namespace CoffeeMachine.Api.Controllers
            _dateTimeProviderService = dateTimeProviderService;
         }
 
-
-
-
         /// <summary>
         /// Brews a cup of coffee.
         /// </summary>
@@ -29,9 +26,9 @@ namespace CoffeeMachine.Api.Controllers
         /// <response code="503">Service Unavailable</response>
         /// <response code="418">I’m a Teapot</response>
         [HttpGet, Route("brew-coffee")]
-        [SwaggerOperation(Summary = "Brews a cup of coffee", Description ="Brews a cup of coffee. On every 5th call the coffee needs to be refilled and will return 503 when coffee has run out. If the date is April 1st returns 418") ]
+        [SwaggerOperation(Summary = "Brews a cup of coffee", Description ="Brews a cup of coffee. On every 5th call the coffee runs out and needs to be refilled. Will return 503 when coffee has run out. If the date is April 1st will return 418") ]
         [SwaggerResponse(StatusCodes.Status200OK, "200 OK")]
-        [SwaggerResponse(StatusCodes.Status503ServiceUnavailable, "503 Servce Unavailable")]
+        [SwaggerResponse(StatusCodes.Status503ServiceUnavailable, "503 Service Unavailable")]
         [SwaggerResponse(StatusCodes.Status418ImATeapot, "418 I'm a Teapot")]
         public IActionResult BrewCoffee(){
 
@@ -45,7 +42,6 @@ namespace CoffeeMachine.Api.Controllers
             if(now.Date.Month == 4 && now.Date.Day == 1){
                 return StatusCode(StatusCodes.Status418ImATeapot);
             }
-
             
             return StatusCode(StatusCodes.Status200OK, new 
             {
