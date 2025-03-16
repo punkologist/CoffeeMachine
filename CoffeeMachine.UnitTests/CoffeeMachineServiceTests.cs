@@ -4,6 +4,7 @@ using CoffeeMachine.Services;
 using CoffeeMachine.Services.Interfaces;
 using CoffeeMachine.Services.Models;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using NSubstitute;
 using Xunit;
 
@@ -15,14 +16,15 @@ namespace CoffeeMachine.UnitTests
         IOpenWeatherService _openWeatherService;
         IConfiguration _configuration;
         CoffeeMachineService _coffeeMachineService;
+        ILogger<CoffeeMachineService> _logger;
 
         public CoffeeMachineServiceTests()
         {
             _dateTimeProviderService = Substitute.For<IDateTimeProviderService>();
             _openWeatherService = Substitute.For<IOpenWeatherService>();
             _configuration = Substitute.For<IConfiguration>();
-
-            _coffeeMachineService = new CoffeeMachineService(_dateTimeProviderService, _openWeatherService, _configuration);
+            _logger = Substitute.For<ILogger<CoffeeMachineService>>();
+            _coffeeMachineService = new CoffeeMachineService(_dateTimeProviderService, _openWeatherService, _configuration, _logger);
         }
 
 

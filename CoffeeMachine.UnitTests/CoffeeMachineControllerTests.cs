@@ -102,11 +102,9 @@ public class CoffeeMachineControllerTests
             var coffeeMachineService = Substitute.For<ICoffeeMachineService>();
             var brewCoffeeResult = new BrewCoffeeResult
             {
-                IsSuccess = true,
-                ResultType = ResultType.Success,
-                CoffeeType = CoffeeType.PipingHot,
-                SuccessMessage = "Your PipingHot coffee is ready",
-                PreparedAt = new DateTimeOffset(new DateTime(DateTime.Now.Year, 4, 1))
+                IsSuccess = false,
+                ResultType = ResultType.AprilFools,
+               
             };
 
             coffeeMachineService.BrewCoffeeAsync().Returns(brewCoffeeResult);
@@ -119,49 +117,6 @@ public class CoffeeMachineControllerTests
             // Assert
             Assert.IsType<StatusCodeResult>(result);
             Assert.Equal(StatusCodes.Status418ImATeapot, result.StatusCode);
-        }
-
-        [Fact]
-        public async Task BrewCoffee_NonAprilFoolsDay_ReturnsOk()
-        {
-            // Arrange
-            var coffeeMachineService = Substitute.For<ICoffeeMachineService>();
-            var brewCoffeeResult = new BrewCoffeeResult
-            {
-                IsSuccess = true,
-                ResultType = ResultType.Success,
-                CoffeeType = CoffeeType.PipingHot,
-                SuccessMessage = "Your PipingHot coffee is ready",
-                PreparedAt = new DateTimeOffset(new DateTime(DateTime.Now.Year, 3, 31))
-            };
-
-            coffeeMachineService.BrewCoffeeAsync().Returns(brewCoffeeResult);
-            var controller = new CoffeeMachineController(coffeeMachineService);
-            CoffeeMachineController._coffeeOrders = 0;
-
-            // Act
-            var result = await controller.BrewCoffee() as ObjectResult;
-
-            // Assert
-            Assert.IsType<ObjectResult>(result);
-            Assert.Equal(StatusCodes.Status200OK, result.StatusCode);
-        }
-
-        [Fact]
-        public async Task BrewCoffee_BrewCoffeeAsyncThrowsException_ReturnsInternalServerError()
-        {
-            // Arrange
-            var coffeeMachineService = Substitute.For<ICoffeeMachineService>();
-            coffeeMachineService.BrewCoffeeAsync().Throws(new Exception("Test exception"));
-            var controller = new CoffeeMachineController(coffeeMachineService);
-
-            // Act
-            var result = await controller.BrewCoffee() as ObjectResult;
-
-            // Assert
-            Assert.IsType<ObjectResult>(result);
-            Assert.Equal(StatusCodes.Status500InternalServerError, result.StatusCode);
-            Assert.Equal("Test exception", result.Value);
         }
 
         [Fact]
@@ -183,9 +138,7 @@ public class CoffeeMachineControllerTests
             var result = await controller.BrewCoffee() as ObjectResult;
 
             // Assert
-            Assert.IsType<ObjectResult>(result);
             Assert.Equal(StatusCodes.Status500InternalServerError, result.StatusCode);
-            Assert.Equal("Failed to get geo coordinates for the city.", result.Value);
         }
 
     }

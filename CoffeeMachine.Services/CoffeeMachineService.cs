@@ -2,15 +2,18 @@ using System;
 using CoffeeMachine.Services.Interfaces;
 using CoffeeMachine.Services.Models;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 
 namespace CoffeeMachine.Services;
 
-public class CoffeeMachineService(IDateTimeProviderService dateTimeProviderService, IOpenWeatherService openWeatherService, IConfiguration configuration) : ICoffeeMachineService
+public class CoffeeMachineService(IDateTimeProviderService dateTimeProviderService, IOpenWeatherService openWeatherService, IConfiguration configuration, ILogger<CoffeeMachineService> logger) : ICoffeeMachineService
 {
     private readonly IDateTimeProviderService dateTimeProviderService = dateTimeProviderService;
     private readonly IOpenWeatherService openWeatherService = openWeatherService;
 
     private readonly IConfiguration configuration = configuration;
+
+    private readonly ILogger<CoffeeMachineService> logger = logger;
 
     public async Task<BrewCoffeeResult> BrewCoffeeAsync()
     {
@@ -38,6 +41,8 @@ public class CoffeeMachineService(IDateTimeProviderService dateTimeProviderServi
 
             if (geoCoordinates == null || geoCoordinates.Length == 0)
             {
+                logger.LogError("Failed to get geo coordinates for the city {city}.", city);
+
                 return new BrewCoffeeResult
                 {
                     IsSuccess = false,
@@ -61,6 +66,9 @@ public class CoffeeMachineService(IDateTimeProviderService dateTimeProviderServi
         }
         catch (Exception ex)
         {
+
+            logger.LogError(ex, "An error occurred while brewing coffee.");
+
             return new BrewCoffeeResult
             {
                 IsSuccess = false,
