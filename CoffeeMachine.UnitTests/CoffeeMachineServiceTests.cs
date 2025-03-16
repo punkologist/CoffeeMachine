@@ -6,6 +6,7 @@ using CoffeeMachine.Services.Models;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
+using NSubstitute.ExceptionExtensions;
 using Xunit;
 
 namespace CoffeeMachine.UnitTests
@@ -59,6 +60,24 @@ namespace CoffeeMachine.UnitTests
             Assert.Equal(ResultType.Error, result.ResultType);
             Assert.Equal("Failed to get geo coordinates for the city.", result.ErrorMessage);
         }
+
+        [Fact]
+        public async Task BrewCoffeeAsync_ReturnsError_WhenGeoCoordinatesThrowsAnException()
+        {
+            // Arrange
+            _dateTimeProviderService.Now.Returns(new DateTimeOffset(new DateTime(2025, 3, 16)));
+            _configuration["OpenWeatherApi:City"].Returns("InvalidCity");
+            _configuration["OpenWeatherApi:CountryCode"].Returns("GB");
+            _openWeatherService.GetGeoCoordinatesAsync(Arg.Any<string>(), Arg.Any<string>()).ThrowsAsync(new Exception("API is unavailable"));
+
+            // Act
+            var result = await _coffeeMachineService.BrewCoffeeAsync();
+
+            // Assert
+            Assert.False(result.IsSuccess);
+            Assert.Equal(ResultType.Error, result.ResultType);
+        }
+
 
         [Fact]
         public async Task BrewCoffeeAsync_ReturnsSuccess_WhenWeatherIsHot()

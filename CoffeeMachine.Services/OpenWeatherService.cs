@@ -74,13 +74,28 @@ public class OpenWeatherService(RestClient restClient, ILogger<OpenWeatherServic
 
 
             }
+            if(result != null && !result.IsSuccessStatusCode){
+
+                if(result.StatusCode == System.Net.HttpStatusCode.Unauthorized){
+                    throw new HttpRequestException("Invalid or unauthorised api key",null,result.StatusCode);
+                }
+                
+                if(result.ErrorException != null){
+                    
+                    throw result.ErrorException;
+                }
+               
+                
+                return [];
+            }
             // If no geo coordinates are found, return an empty array
            return [];
 
         }
         catch (Exception ex)
         {
-            throw new InvalidOperationException("Failed to get geo coordinates from OpenWeather API.", ex);
+            logger.LogError(ex, ex.Message);
+            throw;
         }
 
 

@@ -6,11 +6,13 @@ using CoffeeMachine.Services.Interfaces;
 using RestSharp;
 using Xunit;
 using Microsoft.Extensions.Logging;
+using NSubstitute;
+using NSubstitute.ExceptionExtensions;
 
 namespace CoffeeMachine.IntegrationTests
 {
- public class OpenWeatherServiceTests
-{
+    public class OpenWeatherServiceTests
+    {
         private readonly IOpenWeatherService _openWeatherService;
 
         public OpenWeatherServiceTests()
@@ -18,7 +20,7 @@ namespace CoffeeMachine.IntegrationTests
             var configuration = new ConfigurationBuilder()
                 .AddJsonFile("appsettings.json")
                 .Build();
-            
+
             var baseUrl = configuration["OpenWeatherApi:BaseUrl"] ?? throw new ArgumentNullException("OpenWeatherApi:BaseUrl");
             var apiKey = configuration["OpenWeatherApi:ApiKey"] ?? throw new ArgumentNullException("OpenWeatherApi:ApiKey");
 
@@ -27,7 +29,7 @@ namespace CoffeeMachine.IntegrationTests
 
             var logger = new LoggerFactory().CreateLogger<OpenWeatherService>();
 
-            _openWeatherService = new OpenWeatherService(restClient,logger);
+            _openWeatherService = new OpenWeatherService(restClient, logger);
         }
 
         [Fact]
@@ -54,13 +56,13 @@ namespace CoffeeMachine.IntegrationTests
             var countryCode = "GB";
 
             // Act & Assert
-           
-               var result = await _openWeatherService.GetGeoCoordinatesAsync(city, countryCode);
+
+            var result = await _openWeatherService.GetGeoCoordinatesAsync(city, countryCode);
 
             // Assert
             Assert.NotNull(result);
             Assert.Empty(result);
-            
+
         }
 
         [Fact]
@@ -77,7 +79,7 @@ namespace CoffeeMachine.IntegrationTests
             Assert.NotNull(result);
             Assert.Equal("Melbourne", result.Name, ignoreCase: true);
         }
-    
+
         [Fact]
         public async Task GetCurrentWeatherAsync_InvalidCoordinates_ThrowsException()
         {
@@ -87,6 +89,47 @@ namespace CoffeeMachine.IntegrationTests
 
             // Act & Assert
             await Assert.ThrowsAsync<InvalidOperationException>(() => _openWeatherService.GetCurrentWeatherAsync(lat, lon));
+        }
+
+        [Fact]
+        public async Task GetGeoCoordinatesAsync_ApiUnavailable_ThrowsHttpRequestException()
+        {
+            // Arrange
+            var city = "Melbourne";
+            var countryCode = "AU";
+
+            var invalidBaseUrl = "http://invalid.url";
+            var restClient = new RestClient(new Uri(invalidBaseUrl));
+
+            var logger = new LoggerFactory().CreateLogger<OpenWeatherService>();
+            var openWeatherService = new OpenWeatherService(restClient, logger);
+
+            // Act & Assert
+            await Assert.ThrowsAsync<HttpRequestException>(() => openWeatherService.GetGeoCoordinatesAsync(city, countryCode));
+        }
+
+        
+        [Fact]
+        public async Task GetGeoCoordinatesAsync_InvalidApiKey_ThrowsHttpRequestException()
+        {
+            // Arrange
+            var city = "Melbourne";
+            var countryCode = "AU";
+
+          var configuration = new ConfigurationBuilder()
+                .AddJsonFile("appsettings.json")
+                .Build();
+
+            var baseUrl = configuration["OpenWeatherApi:BaseUrl"] ?? throw new ArgumentNullException("OpenWeatherApi:BaseUrl");
+
+            var restClient = new RestClient(new Uri(baseUrl));
+            restClient.AddDefaultQueryParameter("appid", "invalidApiKey");
+
+            var logger = new LoggerFactory().CreateLogger<OpenWeatherService>();
+
+            var openWeatherService = new OpenWeatherService(restClient, logger);
+            // Act & Assert
+            await Assert.ThrowsAsync<HttpRequestException>(() => openWeatherService.GetGeoCoordinatesAsync(city, countryCode));
         }
 
     }
