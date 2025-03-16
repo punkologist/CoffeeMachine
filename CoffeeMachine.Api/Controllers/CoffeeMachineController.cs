@@ -10,7 +10,7 @@ namespace CoffeeMachine.Api.Controllers
     [ApiController]
     public class CoffeeMachineController : ControllerBase
     {
-        public static int _brewCoffeeRequestCount = 0;
+       
         private readonly IDateTimeProviderService _dateTimeProviderService;
 
         public CoffeeMachineController(IDateTimeProviderService dateTimeProviderService)
@@ -32,10 +32,11 @@ namespace CoffeeMachine.Api.Controllers
         [SwaggerResponse(StatusCodes.Status418ImATeapot, "418 I'm a Teapot")]
         public IActionResult BrewCoffee(){
 
-            _brewCoffeeRequestCount++;
+            RequestTracker.IncrementBrewCoffeeRequestCount();
+            //_brewCoffeeRequestCount++;
             var now = _dateTimeProviderService.Now;
             // if the request count is the fith call, return 503
-            if(_brewCoffeeRequestCount > 0 && _brewCoffeeRequestCount % 5 == 0){
+            if(RequestTracker.BrewCoffeeRequestCount > 0 && RequestTracker.BrewCoffeeRequestCount % 5 == 0){
                 return StatusCode(StatusCodes.Status503ServiceUnavailable);
             }
             // it's april fools day, return 418

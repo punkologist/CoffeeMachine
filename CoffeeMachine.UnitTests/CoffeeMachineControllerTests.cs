@@ -19,8 +19,8 @@ public class CoffeeMachineControllerTests
             var dateTimeProviderService = NSubstitute.Substitute.For<IDateTimeProviderService>();
             dateTimeProviderService.Now.Returns(new DateTimeOffset(new DateTime(DateTime.Now.Year, 3, 31)));
             var controller = new CoffeeMachineController(new DateTimeProviderService());
-            CoffeeMachineController._brewCoffeeRequestCount = 0;
-
+            //CoffeeMachineController._brewCoffeeRequestCount = 0;
+            RequestTracker.SetBrewCoffeeRequestCount(0);
             // Act
             var result = controller.BrewCoffee() as ObjectResult;
 
@@ -35,8 +35,8 @@ public class CoffeeMachineControllerTests
             // Arrange
             // date is irrelevant for this test
             var controller = new CoffeeMachineController(new DateTimeProviderService());
-            CoffeeMachineController._brewCoffeeRequestCount = 4;
-
+            //CoffeeMachineController._brewCoffeeRequestCount = 4;
+            RequestTracker.SetBrewCoffeeRequestCount(4);
             // Act
             var result = controller.BrewCoffee() as StatusCodeResult;
 
@@ -53,7 +53,7 @@ public class CoffeeMachineControllerTests
             var dateTimeProviderService = NSubstitute.Substitute.For<IDateTimeProviderService>();
             dateTimeProviderService.Now.Returns(new DateTimeOffset(new DateTime(DateTime.Now.Year, 3, 31)));
             var controller = new CoffeeMachineController(dateTimeProviderService);
-
+            RequestTracker.SetBrewCoffeeRequestCount(0);
             // Act
             for (int i = 0; i < 4; i++)
             {
@@ -77,8 +77,8 @@ public class CoffeeMachineControllerTests
             dateTimeProviderService.Now.Returns(new DateTimeOffset(new DateTime(DateTime.Now.Year, 3, 31)));
             var controller = new CoffeeMachineController(dateTimeProviderService);
             // start at 5 so we can get to the second 5th call
-            CoffeeMachineController._brewCoffeeRequestCount = 5;
-
+            //CoffeeMachineController._brewCoffeeRequestCount = 5;
+            RequestTracker.SetBrewCoffeeRequestCount(5);
             // Act
             for (int i = 0; i < 4; i++)
             {
@@ -100,8 +100,8 @@ public class CoffeeMachineControllerTests
             var dateTimeProviderService = NSubstitute.Substitute.For<IDateTimeProviderService>();
             dateTimeProviderService.Now.Returns(new DateTimeOffset(new DateTime(DateTime.Now.Year, 4, 1)));
             var controller = new CoffeeMachineController(dateTimeProviderService);
-            CoffeeMachineController._brewCoffeeRequestCount = 0;
-          
+            //CoffeeMachineController._brewCoffeeRequestCount = 0;
+            RequestTracker.SetBrewCoffeeRequestCount(0);
             // Act
             var result = controller.BrewCoffee() as StatusCodeResult;
 
@@ -117,8 +117,8 @@ public class CoffeeMachineControllerTests
             var dateTimeProviderService = NSubstitute.Substitute.For<IDateTimeProviderService>();
             dateTimeProviderService.Now.Returns(new DateTimeOffset(new DateTime(DateTime.Now.Year, 3, 31)));
             var controller = new CoffeeMachineController(dateTimeProviderService);
-            CoffeeMachineController._brewCoffeeRequestCount = 0;
-
+            //CoffeeMachineController._brewCoffeeRequestCount = 0;
+            RequestTracker.SetBrewCoffeeRequestCount(0);
             // Act
             var result = controller.BrewCoffee() as ObjectResult;
 
@@ -134,8 +134,8 @@ public class CoffeeMachineControllerTests
             var dateTimeProviderService = NSubstitute.Substitute.For<IDateTimeProviderService>();
             dateTimeProviderService.Now.Returns(new DateTimeOffset(new DateTime(DateTime.Now.Year, 4, 1)));
             var controller = new CoffeeMachineController(dateTimeProviderService);
-            CoffeeMachineController._brewCoffeeRequestCount = 9;
-
+            //CoffeeMachineController._brewCoffeeRequestCount = 9;
+            RequestTracker.SetBrewCoffeeRequestCount(9);
             // Act
             var result = controller.BrewCoffee() as StatusCodeResult;
 
