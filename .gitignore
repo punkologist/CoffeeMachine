@@ -485,3 +485,4 @@ $RECYCLE.BIN/
 
 # Ignore appsettings.json
 CoffeeMachine.Api/appsettings.json
+CoffeeMachine.IntegrationTests/appsettings.json
