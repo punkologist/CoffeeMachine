@@ -3,20 +3,16 @@ using Microsoft.AspNetCore.Mvc;
 using CoffeeMachine.Services;
 using CoffeeMachine.Services.Interfaces;
 using Swashbuckle.AspNetCore.Annotations;
+using CoffeeMachine.Services.Models;
 
 namespace CoffeeMachine.Api.Controllers
 {
     [Route("/")]
     [ApiController]
-    public class CoffeeMachineController : ControllerBase
+    public class CoffeeMachineController(ICoffeeMachineService coffeeMachineService) : ControllerBase
     {
-        public static int _brewCoffeeRequestCount = 0;
-        private readonly IDateTimeProviderService _dateTimeProviderService;
-
-        public CoffeeMachineController(IDateTimeProviderService dateTimeProviderService)
-        {
-           _dateTimeProviderService = dateTimeProviderService;
-        }
+        private readonly ICoffeeMachineService coffeeMachineService = coffeeMachineService;
+        public static int _coffeeOrders = 0;
 
         /// <summary>
         /// Brews a cup of coffee.
@@ -26,28 +22,33 @@ namespace CoffeeMachine.Api.Controllers
         /// <response code="503">Service Unavailable</response>
         /// <response code="418">I’m a Teapot</response>
         [HttpGet, Route("brew-coffee")]
-        [SwaggerOperation(Summary = "Brews a cup of coffee", Description ="Brews a cup of coffee. On every 5th call the coffee runs out and needs to be refilled. Will return 503 when coffee has run out. If the date is April 1st will return 418") ]
+        [SwaggerOperation(Summary = "Brews a cup of coffee", Description ="Brews a cup of coffee. If the weather is greater than 30°C thge coffee will be ieced coffe. On every 5th call the coffee runs out and needs to be refilled. Will return 503 when coffee has run out. If the date is April 1st will return 418") ]
         [SwaggerResponse(StatusCodes.Status200OK, "200 OK")]
         [SwaggerResponse(StatusCodes.Status503ServiceUnavailable, "503 Service Unavailable")]
         [SwaggerResponse(StatusCodes.Status418ImATeapot, "418 I'm a Teapot")]
-        public IActionResult BrewCoffee(){
+        public async Task<IActionResult> BrewCoffee(){
 
-            _brewCoffeeRequestCount++;
-            var now = _dateTimeProviderService.Now;
-            // if the request count is the fith call, return 503
-            if(_brewCoffeeRequestCount > 0 && _brewCoffeeRequestCount % 5 == 0){
-                return StatusCode(StatusCodes.Status503ServiceUnavailable);
+
+            _coffeeOrders++;
+
+        // check for stock level
+        if (_coffeeOrders % 5 == 0)
+        {
+           return StatusCode(StatusCodes.Status503ServiceUnavailable);
+        }
+
+            var result = await coffeeMachineService.BrewCoffeeAsync();
+            if(result.IsSuccess){
+                return StatusCode(StatusCodes.Status200OK, new 
+                {
+                    message = result.SuccessMessage, 
+                    prepared = result.PreparedAt
+                });
             }
-            // it's april fools day, return 418
-            if(now.Date.Month == 4 && now.Date.Day == 1){
-                return StatusCode(StatusCodes.Status418ImATeapot);
-            }
-            
-            return StatusCode(StatusCodes.Status200OK, new 
-            {
-                message = "Your piping hot coffee is ready", 
-                prepared = now
-            });
+
+            return result.ResultType == ResultType.AprilFools ? StatusCode(StatusCodes.Status418ImATeapot) : StatusCode(StatusCodes.Status500InternalServerError);
+           
+
         }
 
     }
