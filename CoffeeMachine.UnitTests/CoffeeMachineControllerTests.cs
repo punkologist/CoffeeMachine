@@ -14,11 +14,19 @@ namespace CoffeeMachine.UnitTests
 {
 public class CoffeeMachineControllerTests
 {
+        private readonly ICoffeeMachineService _coffeeMachineService;
+        private readonly CoffeeMachineController _controller;
+
+        public CoffeeMachineControllerTests()
+        {
+            _coffeeMachineService = Substitute.For<ICoffeeMachineService>();
+            _controller = new CoffeeMachineController(_coffeeMachineService);
+        }
+
         [Fact]
         public async Task BrewCoffee_RequestIsNotFifth_ReturnsOk()
         {
             // Arrange
-            var coffeeMachineService = NSubstitute.Substitute.For<ICoffeeMachineService>(); 
             var brewCoffeeResult = new BrewCoffeeResult { 
                 IsSuccess = true, 
                 ResultType = ResultType.Success,
@@ -26,13 +34,11 @@ public class CoffeeMachineControllerTests
                 SuccessMessage = "Your PipingHot coffee is ready", 
                 PreparedAt = new DateTimeOffset(new DateTime(DateTime.Now.Year, 3, 31)) };
 
-            coffeeMachineService.BrewCoffeeAsync().Returns(brewCoffeeResult);
-            var controller = new CoffeeMachineController(coffeeMachineService);
-
+            _coffeeMachineService.BrewCoffeeAsync().Returns(brewCoffeeResult);
             CoffeeMachineController._coffeeOrders = 0;
 
             // Act
-            var result = await controller.BrewCoffee() as ObjectResult;
+            var result = await _controller.BrewCoffee() as ObjectResult;
 
             // Assert
             Assert.IsType<ObjectResult>(result);
@@ -43,7 +49,7 @@ public class CoffeeMachineControllerTests
         public async Task BrewCoffee_RequestIsFifth_ReturnsServiceUnavailable()
         {
             // Arrange
-            var coffeeMachineService = NSubstitute.Substitute.For<ICoffeeMachineService>(); 
+            
             var brewCoffeeResult = new BrewCoffeeResult { 
                 IsSuccess = true, 
                 ResultType = ResultType.Success,
@@ -51,12 +57,12 @@ public class CoffeeMachineControllerTests
                 SuccessMessage = "Your PipingHot coffee is ready", 
                 PreparedAt = new DateTimeOffset(new DateTime(DateTime.Now.Year, 3, 31)) };
 
-            coffeeMachineService.BrewCoffeeAsync().Returns(brewCoffeeResult);
-            var controller = new CoffeeMachineController(coffeeMachineService);
+            _coffeeMachineService.BrewCoffeeAsync().Returns(brewCoffeeResult);
+           
             CoffeeMachineController._coffeeOrders = 4;
 
             // Act
-            var result = await controller.BrewCoffee() as StatusCodeResult;
+            var result = await _controller.BrewCoffee() as StatusCodeResult;
 
             // Assert
             Assert.IsType<StatusCodeResult>(result);
@@ -67,8 +73,6 @@ public class CoffeeMachineControllerTests
         public async Task BrewCoffee_ReturnsServiceUnavailableOnFifthCall()
         {
             // Arrange
-            // still sub for DateTimeProviderService incase today is actually april 1st
-             var coffeeMachineService = NSubstitute.Substitute.For<ICoffeeMachineService>(); 
             var brewCoffeeResult = new BrewCoffeeResult { 
                 IsSuccess = true, 
                 ResultType = ResultType.Success,
@@ -76,21 +80,21 @@ public class CoffeeMachineControllerTests
                 SuccessMessage = "Your PipingHot coffee is ready", 
                 PreparedAt = new DateTimeOffset(new DateTime(DateTime.Now.Year, 3, 31)) };
 
-            coffeeMachineService.BrewCoffeeAsync().Returns(brewCoffeeResult);
-            var controller = new CoffeeMachineController(coffeeMachineService);
+            _coffeeMachineService.BrewCoffeeAsync().Returns(brewCoffeeResult);
+
             CoffeeMachineController._coffeeOrders = 0;
             
 
             // Act
             for (int i = 0; i < 4; i++)
             {
-                var result = await controller.BrewCoffee() as ObjectResult;
+                var result = await _controller.BrewCoffee() as ObjectResult;
                 Assert.IsType<ObjectResult>(result);
                 Assert.Equal(StatusCodes.Status200OK, result.StatusCode);
             }
 
             // assert
-            var finalResult = await controller.BrewCoffee() as StatusCodeResult;
+            var finalResult = await _controller.BrewCoffee() as StatusCodeResult;
             Assert.IsType<StatusCodeResult>(finalResult);
             Assert.Equal(StatusCodes.Status503ServiceUnavailable, finalResult.StatusCode);
         }
@@ -99,7 +103,6 @@ public class CoffeeMachineControllerTests
         public async Task BrewCoffee_AprilFoolsDay_ReturnsTeapot()
         {
             // Arrange
-            var coffeeMachineService = Substitute.For<ICoffeeMachineService>();
             var brewCoffeeResult = new BrewCoffeeResult
             {
                 IsSuccess = false,
@@ -107,12 +110,11 @@ public class CoffeeMachineControllerTests
                
             };
 
-            coffeeMachineService.BrewCoffeeAsync().Returns(brewCoffeeResult);
-            var controller = new CoffeeMachineController(coffeeMachineService);
+            _coffeeMachineService.BrewCoffeeAsync().Returns(brewCoffeeResult);
             CoffeeMachineController._coffeeOrders = 0;
 
             // Act
-            var result = await controller.BrewCoffee() as StatusCodeResult;
+            var result = await _controller.BrewCoffee() as StatusCodeResult;
 
             // Assert
             Assert.IsType<StatusCodeResult>(result);
@@ -123,7 +125,6 @@ public class CoffeeMachineControllerTests
         public async Task BrewCoffee_BrewCoffeeAsyncReturnsError_ReturnsInternalServerError()
         {
             // Arrange
-            var coffeeMachineService = Substitute.For<ICoffeeMachineService>();
             var brewCoffeeResult = new BrewCoffeeResult
             {
                 IsSuccess = false,
@@ -131,11 +132,11 @@ public class CoffeeMachineControllerTests
                 ErrorMessage = "Failed to get geo coordinates for the city."
             };
 
-            coffeeMachineService.BrewCoffeeAsync().Returns(brewCoffeeResult);
-            var controller = new CoffeeMachineController(coffeeMachineService);
+            _coffeeMachineService.BrewCoffeeAsync().Returns(brewCoffeeResult);
+            CoffeeMachineController._coffeeOrders = 0;
 
             // Act
-            var result = await controller.BrewCoffee() as ObjectResult;
+            var result = await _controller.BrewCoffee() as ObjectResult;
 
             // Assert
             Assert.Equal(StatusCodes.Status500InternalServerError, result.StatusCode);
