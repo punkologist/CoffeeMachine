@@ -12,7 +12,6 @@ namespace CoffeeMachine.Api.Controllers
     public class CoffeeMachineController(ICoffeeMachineService coffeeMachineService) : ControllerBase
     {
         private readonly ICoffeeMachineService coffeeMachineService = coffeeMachineService;
-        public static int _coffeeOrders = 0;
 
         /// <summary>
         /// Brews a cup of coffee.
@@ -26,15 +25,12 @@ namespace CoffeeMachine.Api.Controllers
         [SwaggerResponse(StatusCodes.Status200OK, "200 OK")]
         [SwaggerResponse(StatusCodes.Status503ServiceUnavailable, "503 Service Unavailable")]
         [SwaggerResponse(StatusCodes.Status418ImATeapot, "418 I'm a Teapot")]
-        public async Task<IActionResult> BrewCoffee()
-        {
+        public async Task<IActionResult> BrewCoffee(){
 
-
-            _coffeeOrders++;
-
-            // check for stock level (every 5th order there is no coffee)
-            if (_coffeeOrders % 5 == 0)
-            {
+            RequestTracker.IncrementBrewCoffeeRequestCount();
+     
+            // if the request count is the fith call, return 503
+            if(RequestTracker.BrewCoffeeRequestCount > 0 && RequestTracker.BrewCoffeeRequestCount % 5 == 0){
                 return StatusCode(StatusCodes.Status503ServiceUnavailable);
             }
 

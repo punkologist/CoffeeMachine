@@ -35,7 +35,7 @@ public class CoffeeMachineControllerTests
                 PreparedAt = new DateTimeOffset(new DateTime(DateTime.Now.Year, 3, 31)) };
 
             _coffeeMachineService.BrewCoffeeAsync().Returns(brewCoffeeResult);
-            CoffeeMachineController._coffeeOrders = 0;
+            RequestTracker.SetBrewCoffeeRequestCount(0);
 
             // Act
             var result = await _controller.BrewCoffee() as ObjectResult;
@@ -59,7 +59,7 @@ public class CoffeeMachineControllerTests
 
             _coffeeMachineService.BrewCoffeeAsync().Returns(brewCoffeeResult);
            
-            CoffeeMachineController._coffeeOrders = 4;
+             RequestTracker.SetBrewCoffeeRequestCount(4);
 
             // Act
             var result = await _controller.BrewCoffee() as StatusCodeResult;
@@ -82,7 +82,7 @@ public class CoffeeMachineControllerTests
 
             _coffeeMachineService.BrewCoffeeAsync().Returns(brewCoffeeResult);
 
-            CoffeeMachineController._coffeeOrders = 0;
+            RequestTracker.SetBrewCoffeeRequestCount(0);
             
 
             // Act
@@ -111,8 +111,7 @@ public class CoffeeMachineControllerTests
             };
 
             _coffeeMachineService.BrewCoffeeAsync().Returns(brewCoffeeResult);
-            CoffeeMachineController._coffeeOrders = 0;
-
+            RequestTracker.SetBrewCoffeeRequestCount(0);
             // Act
             var result = await _controller.BrewCoffee() as StatusCodeResult;
 
@@ -133,8 +132,7 @@ public class CoffeeMachineControllerTests
             };
 
             _coffeeMachineService.BrewCoffeeAsync().Returns(brewCoffeeResult);
-            CoffeeMachineController._coffeeOrders = 0;
-
+            RequestTracker.SetBrewCoffeeRequestCount(0);
             // Act
             var result = await _controller.BrewCoffee() as ObjectResult;
 
