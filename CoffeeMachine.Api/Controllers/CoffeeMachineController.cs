@@ -22,7 +22,7 @@ namespace CoffeeMachine.Api.Controllers
         /// <response code="503">Service Unavailable</response>
         /// <response code="418">I’m a Teapot</response>
         [HttpGet, Route("brew-coffee")]
-        [SwaggerOperation(Summary = "Brews a cup of coffee", Description = "Brews a cup of coffee. If the weather is greater than 30°C thge coffee will be ieced coffe. On every 5th call the coffee runs out and needs to be refilled. Will return 503 when coffee has run out. If the date is April 1st will return 418")]
+        [SwaggerOperation(Summary = "Brews a cup of coffee", Description = "Brews a cup of coffee. If the weather is greater than 30°C the coffee will be iced coffe. On every 5th call the coffee runs out and needs to be refilled. Will return 503 when coffee has run out. If the date is April 1st will return 418")]
         [SwaggerResponse(StatusCodes.Status200OK, "200 OK")]
         [SwaggerResponse(StatusCodes.Status503ServiceUnavailable, "503 Service Unavailable")]
         [SwaggerResponse(StatusCodes.Status418ImATeapot, "418 I'm a Teapot")]
