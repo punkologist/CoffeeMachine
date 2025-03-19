@@ -22,7 +22,7 @@ Here is a sample `appsettings.json` file. Please note that the value of the API 
     "BaseUrl": "http://api.openweathermap.org",
     "ApiKey":"your_api_key_here",
     "City": "Melbourne",
-    "Country": "AU"
+    "CountryCode": "AU"
   }
 }
 ```
