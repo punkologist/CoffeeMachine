@@ -3,20 +3,15 @@ using Microsoft.AspNetCore.Mvc;
 using CoffeeMachine.Services;
 using CoffeeMachine.Services.Interfaces;
 using Swashbuckle.AspNetCore.Annotations;
+using CoffeeMachine.Services.Models;
 
 namespace CoffeeMachine.Api.Controllers
 {
     [Route("/")]
     [ApiController]
-    public class CoffeeMachineController : ControllerBase
+    public class CoffeeMachineController(ICoffeeMachineService coffeeMachineService) : ControllerBase
     {
-       
-        private readonly IDateTimeProviderService _dateTimeProviderService;
-
-        public CoffeeMachineController(IDateTimeProviderService dateTimeProviderService)
-        {
-           _dateTimeProviderService = dateTimeProviderService;
-        }
+        private readonly ICoffeeMachineService coffeeMachineService = coffeeMachineService;
 
         /// <summary>
         /// Brews a cup of coffee.
@@ -26,29 +21,43 @@ namespace CoffeeMachine.Api.Controllers
         /// <response code="503">Service Unavailable</response>
         /// <response code="418">I’m a Teapot</response>
         [HttpGet, Route("brew-coffee")]
-        [SwaggerOperation(Summary = "Brews a cup of coffee", Description ="Brews a cup of coffee. On every 5th call the coffee runs out and needs to be refilled. Will return 503 when coffee has run out. If the date is April 1st will return 418") ]
+        [SwaggerOperation(Summary = "Brews a cup of coffee", Description = "Brews a cup of coffee. If the weather is greater than 30°C the coffee will be iced coffe. On every 5th call the coffee runs out and needs to be refilled. Will return 503 when coffee has run out. If the date is April 1st will return 418")]
         [SwaggerResponse(StatusCodes.Status200OK, "200 OK")]
         [SwaggerResponse(StatusCodes.Status503ServiceUnavailable, "503 Service Unavailable")]
         [SwaggerResponse(StatusCodes.Status418ImATeapot, "418 I'm a Teapot")]
-        public IActionResult BrewCoffee(){
+        public async Task<IActionResult> BrewCoffee(){
 
             RequestTracker.IncrementBrewCoffeeRequestCount();
-            //_brewCoffeeRequestCount++;
-            var now = _dateTimeProviderService.Now;
+     
             // if the request count is the fith call, return 503
             if(RequestTracker.BrewCoffeeRequestCount > 0 && RequestTracker.BrewCoffeeRequestCount % 5 == 0){
                 return StatusCode(StatusCodes.Status503ServiceUnavailable);
             }
-            // it's april fools day, return 418
-            if(now.Date.Month == 4 && now.Date.Day == 1){
+
+            var result = await coffeeMachineService.BrewCoffeeAsync();
+            if (result.IsSuccess)
+            {
+                return StatusCode(StatusCodes.Status200OK, new
+                {
+                    message = result.SuccessMessage,
+                    prepared = result.PreparedAt
+                });
+            }
+            if (result.ResultType == ResultType.Error)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new
+                {
+                    message = result.ErrorMessage
+                });
+            }
+            if (result.ResultType == ResultType.AprilFools)
+            {
                 return StatusCode(StatusCodes.Status418ImATeapot);
             }
-            
-            return StatusCode(StatusCodes.Status200OK, new 
-            {
-                message = "Your piping hot coffee is ready", 
-                prepared = now
-            });
+
+            return StatusCode(StatusCodes.Status500InternalServerError);
+
+
         }
 
     }

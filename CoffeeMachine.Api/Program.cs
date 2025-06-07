@@ -1,6 +1,7 @@
 using CoffeeMachine.Services.Interfaces;
 using CoffeeMachine.Services;
 using Swashbuckle.AspNetCore.Annotations;
+using RestSharp;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,7 +24,24 @@ builder.Services.AddSwaggerGen(c =>
     
 });
 
-builder.Services.AddSingleton<IDateTimeProviderService, DateTimeProviderService>();
+builder.Services.AddLogging(l=> l.AddConsole());
+
+builder.Services.AddScoped<IDateTimeProviderService, DateTimeProviderService>();
+builder.Services.AddScoped<IOpenWeatherService, OpenWeatherService>();
+builder.Services.AddScoped<ICoffeeMachineService, CoffeeMachineService>();
+
+var configuration = builder.Configuration;
+
+var baseUrl = configuration["OpenWeatherApi:BaseUrl"] ?? throw new ArgumentNullException("OpenWeatherApi:BaseUrl");
+var apiKey = configuration["OpenWeatherApi:ApiKey"] ?? throw new ArgumentNullException("OpenWeatherApi:ApiKey");
+
+builder.Services.AddScoped(
+    p => {
+        var client = new RestClient(new Uri(baseUrl));
+        client.AddDefaultQueryParameter("appid", apiKey);
+        return client;
+    }
+   );
 
 var app = builder.Build();
 
