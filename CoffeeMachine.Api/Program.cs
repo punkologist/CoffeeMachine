@@ -49,7 +49,12 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(s=>
+        {
+            s.SwaggerEndpoint("/swagger/v1/swagger.json", "Coffee Machine - V1");
+            s.RoutePrefix = string.Empty; // Set Swagger UI at the app's root
+        });
+    app.MapSwagger();
 }
 
 app.UseHttpsRedirection();
